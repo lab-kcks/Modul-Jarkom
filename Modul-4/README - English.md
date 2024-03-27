@@ -319,21 +319,46 @@ Set the IP for each **interface** that is on each _device_ according to the subn
 
 On GNS3, go to `Configure > Edit Network Configuration` to set the interface on each device.
 
-In CPT, the interface can be set in the **Config** menu > **INTERFACE** > **“interface name”** (example: FastEthernet0/0). Fill in the IP address and subnet mask of the subnet interface. Here's an example to set the IP on the subnet **A4**.
+In CPT, the interface can be set in the **Config** menu > **CLI** > _**Global Configuration**_
+> To access _Privilege Mode_ by using command line ``enable`` and to access _Global Configuration_ mode by using command line ``configure terminal``
 
-> To see the port direction, you can hover the device while in *logic view*, or you can always activate it in **Options** > **Preferences** > **Always Show Port Labels in Logical Workspace**
+_**Subnetting**_ in CPT can use the  _**router**_ device by using command line: 
+```
+interface <Interface name>
+ip address <IP address> <Netmask>
+no shutdown
+```
+
+Configure the IP address and subnet mask of the subnet interface. The following is an example for setting IP on a subnet **A4**.
+
+> Too see the port direction, you can hover the device while in *logic view*, or you can always activate it in **Options** > **Preferences** > **Always Show Port Labels in Logical Workspace**
 
 Set the IP on the Foosha interface pointing to Pucci with **192.168.1.5**.
+```
+interface fa0/1
+ip address 192.168.1.5 255.255.255.252
+no shutdown
+```
+> To check subnetting, you can use the command line ``do show ip interface brief``
 
-![Gambar](assets/fooshatopucci.png)
+![Image](assets/subnet_fooshatopucci.png)
 
 Set the IP on the Pucci interface pointing to Foosha with **192.168.1.6**.
+```
+interface fa0/0
+ip address 192.168.1.6 255.255.255.252
+no shutdown
+```
+![Image](assets/subnet_puccitofoosha.png)
 
-![Gambar](assets/puccitofoshaa.png)
+Next set the IP on the **A3** subnet. Set the IP on the Pucci interface pointing to client with 192.168.1.65.
+```
+interface fa1/0
+ip address 192.168.1.65 255.255.255.252
+no shutdown
+```
 
-Next set the IP on the A3 subnet. Set the IP on the Pucci interface pointing to _client_ with **192.168.1.65**.
-
-![Gambar](assets/puccitoclient.png)
+![Image](assets/subnet_puccitoclient.png)
 
 Set the IP on _client_ by:
 
@@ -341,27 +366,41 @@ Set the IP on _client_ by:
 -   Select the Desktop tab
 -   Select IP Configuration
 
-![Gambar](assets/hostdesktop.png)
+![Image](assets/hostdesktop.png)
 
-![Gambar](assets/hostipconfig.png)
+![Image](assets/hostipconfig.png)
 
-Do the same thing to set the IP address of each _**interface**_ on the device in the topology. When finished, do the next step, namely _** Routing**_ so that the topology can function properly.
+Do the same thing to set the IP address of each _**interface**_ on the device in the topology. When finished, do the next step, namely _**Routing**_ so that the topology can function properly.
 
 #### 3) Routing
 
-In CPT, _**Routing**_ can be done on the **Config** menu > **Routing** > **Static** on the **Router** device. Then fill in **Static Routes** as shown below on Foosha and press the **Add** button
+_**Routing**_ in CPT can use the  _**router**_ device by using command line: 
+```
+ip route <Destination network ID> <Netmask> <Gateway>
+```
 
-![Gambar](assets/routingfoosha.png)
+The following is an example for performing _**routing**_ on subnet A4 to A3 which is done with the **Foosha** device:
+```
+ip route 192.168.1.64 255.255.255.192 192.168.1.6
+```
+> To check subnetting, you can use the command line ``do show ip route``
 
-In _static routing_ also required _**default routing**_ so that the router can send packets according to the destination. Default routing is required for routers that are under the main router (internet-connected router), for example Pucci
+![Image](assets/routing_a4toa3.png)
 
-![Gambar](assets/routingpucci.png)
+In static routing also required default routing so that the router can send packets according to the destination. Default routing is required for routers that are under the main router (internet-connected router), for example Pucci : 
+```
+ip route 0.0.0.0 0.0.0.0 192.168.1.5
+```
+
+![Image](assets/routing_default.png)
 
 _**Information**_ :
 
-1.  Network 192.168.1.64 is the Network ID to be connected
+1.  Network 192.168.1.64 is the Network ID to be connected which is Subnet A3
 2.  Mask 255.255.255.192 is the netmask of subnet A3
-3.  Next Hop 192.168.1.65 (called **gateway**), is the destination IP when you want to go to subnet point 1, namely the interface on Pucci that leads to Foosha
+3.  Gateway 192.168.1.6 adalah is the nearest router's IP when you want to go to subnet point 1, namely the interface on Pucci that leads to Foosha
+
+> To save all configurations on a router device, you can use the ``do write`` command
 
 In **GNS3**, _routing_ is performed on the _**router**_ device with the command:
 
