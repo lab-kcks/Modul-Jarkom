@@ -323,21 +323,46 @@ Atur IP untuk masing-masing **interface** yang ada di setiap _device_ sesuai den
 
 Pada GNS3, buka `Configure > Edit Network Configuration` untuk mengatur interface pada setiap perangkat.
 
-Pada CPT, interface dapat diatur pada menu **Config** > **INTERFACE** > **“nama interface”** (contoh: FastEthernet0/0). Isi alamat IP dan subnet mask dari subnet interface tersebut. Berikut contoh untuk mengatur IP pada subnet **A4**.
+Pada CPT, subnetting dapat diatur pada menu **Config** > **CLI** > _**Global Configuration**_
+> Untuk masuk ke mode _Privilege Mode_ dengan cara memberikan command line ``enable`` dan untuk masuk ke mode _Global Configuration_ dengan cara memberikan command line ``configure terminal``
+
+_**Subnetting**_ pada CPT dilakukan pada device _**router**_ dengan perintah:
+```
+interface <Nama interface>
+ip address <IP address> <Netmask>
+no shutdown
+```
+
+Config alamat IP dan subnet mask dari subnet interface tersebut. Berikut contoh untuk mengatur IP pada subnet **A4**.
 
 > Untuk melihat arah port, dapat menghover device pada saat di *logic view*, atau dapat selalu diaktifkan di **Options** > **Preferences** > **Always Show Port Labels in Logical Workspace**
 
 Atur IP pada interface Foosha yang mengarah ke Pucci dengan **192.168.1.5**.
+```
+interface fa0/1
+ip address 192.168.1.5 255.255.255.252
+no shutdown
+```
+> Untuk melakukan pengecekan dapat menggunakan command line ``do show ip interface brief``
 
-![Gambar](assets/fooshatopucci.png)
+![Gambar](assets/subnet_fooshatopucci.png)
 
 Atur IP pada interface Pucci yang mengarah ke Foosha dengan **192.168.1.6**.
+```
+interface fa0/0
+ip address 192.168.1.6 255.255.255.252
+no shutdown
+```
+![Gambar](assets/subnet_puccitofoosha.png)
 
-![Gambar](assets/puccitofoshaa.png)
+Selanjutnya atur IP pada subnet **A3**. Atur IP pada interface Pucci yang mengarah ke client dengan 192.168.1.65.
+```
+interface fa1/0
+ip address 192.168.1.65 255.255.255.252
+no shutdown
+```
 
-Selanjutnya atur IP pada subnet A3. Atur IP pada interface Pucci yang mengarah ke _client_ dengan **192.168.1.65**. Dan jangan lupa untuk set Port Status ke **On** agar interface bisa digunakan.
-
-![Gambar](assets/puccitoclient.png)
+![Gambar](assets/subnet_puccitoclient.png)
 
 Atur IP pada _client_ dengan cara :
 
@@ -353,19 +378,33 @@ Lakukan hal yang sama untuk mengatur alamat IP setiap _**interface**_ pada devic
 
 #### 3) Routing
 
-Pada CPT, _**Routing**_ dapat dilakukan pada menu **Config** > **Routing** > **Static** pada device **Router**. Lalu isi **Static Routes** seperti gambar dibawah pada Foosha dan tekan tombol **Add**
+_**Routing**_ pada CPT dilakukan pada device _**router**_ dengan perintah:
+```
+ip route <Destination network ID> <Netmask> <Gateway>
+```
 
-![Gambar](assets/routingfoosha.png)
+Berikut contoh untuk melakukan _**routing**_ pada subnet A4 menuju A3 yang dilakukan dengan device **Foosha** :
+```
+ip route 192.168.1.64 255.255.255.192 192.168.1.6
+```
+> Untuk melakukan pengecekan dapat menggunakan command line ``do show ip route``
 
-Pada _static routing_ juga dibutuhkan _**default routing**_ agar router dapat mengirimkan paket sesuai dengan tujuan. Default routing dibutuhkan untuk router yang berada di bawah router utama (router yang terhubung internet), contohnya Pucci
+![Gambar](assets/routing_a4toa3.png)
 
-![Gambar](assets/routingpucci.png)
+Pada _static routing_ juga dibutuhkan _**default routing**_ agar router dapat mengirimkan paket sesuai dengan tujuan. Default routing dibutuhkan untuk router yang berada di bawah router utama (router yang terhubung internet), contohnya **Pucci** yaitu dengan perintah :
+```
+ip route 0.0.0.0 0.0.0.0 192.168.1.5
+```
+
+![Gambar](assets/routing_default.png)
 
 _**Keterangan**_ :
 
-1.  Network 192.168.1.64 adalah Network ID yang akan dihubungkan
+1.  Network 192.168.1.64 adalah Network ID  yang akan dihubungkan yaitu subnet A3
 2.  Mask 255.255.255.192 adalah netmask dari subnet A3
-3.  Next Hop 192.168.1.65 (disebut **gateway**), adalah IP yang dituju ketika ingin menuju subnet poin 1, yaitu interface pada Pucci yang mengarah ke Foosha
+3.  Gateway 192.168.1.6 adalah IP router terdekat menuju subnet poin 1, yaitu interface pada Pucci yang mengarah ke Foosha
+
+> Untuk menyimpan seluruh konfigurasi yang terdapat pada suatu device router, dapat menggunakan perintah ``do write``
 
 Pada **GNS3**, _routing_ dilakukan pada device _**router**_ dengan perintah :
 
